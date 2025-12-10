@@ -6,6 +6,7 @@ import { scrapeSearch } from "./scraper/search.js";
 import { scrapeEpisode } from "./scraper/episode.js";
 import { getServerStream } from "./scraper/server.js";
 import { scrapeSchedule } from "./scraper/schedule.js";
+import { scrapePopular } from "./scraper/popular.js";
 
 const cache = new NodeCache({ stdTTL: 900 });
 
@@ -175,6 +176,17 @@ export const router = new Elysia()
             console.error(`API Episode Error (${slug}):`, err);
             set.status = 500;
             return { error: "Failed to fetch episode" };
+        }
+    })
+
+    .get("/anime/popular", async ({ set }) => {
+        try {
+            const data = await getOrFetch("popular_anime", scrapePopular);
+            return data || [];
+        } catch (err) {
+            console.error("API Popular Error:", err);
+            set.status = 500;
+            return { error: "Failed to fetch popular anime" };
         }
     })
 

@@ -12,22 +12,17 @@ const DAYS = {
 };
 
 const cleanJson = (text) => {
-    // Sometimes puppeteer returns HTML wrapping the JSON
-    // Expected format: <html><head></head><body><pre>{...}</pre></body></html>
-    // Or just the body content
     try {
         const $ = cheerio.load(text);
         const pre = $("pre").text();
         if (pre) return JSON.parse(pre);
 
-        // If no pre, try parsing the body text
         const body = $("body").text();
         if (body) return JSON.parse(body);
 
         return JSON.parse(text);
     } catch (e) {
         console.warn("Failed to parse JSON from page content, trying raw text cleanup");
-        // Fallback: try to find start and end of JSON
         const start = text.indexOf('[');
         const end = text.lastIndexOf(']');
         if (start !== -1 && end !== -1) {
@@ -44,10 +39,8 @@ export async function scrapeSchedule() {
     for (const [dayKey, dayName] of Object.entries(DAYS)) {
         try {
             console.log(`Fetching schedule for ${dayName} (${dayKey})...`);
-            // Using the internal API found in the site source
             const url = `https://v1.samehadaku.how/wp-json/custom/v1/all-schedule?perpage=20&day=${dayKey}&type=schtml`;
 
-            // We use fetchWithBrowser because simple fetch/axios gets 403 denied
             const html = await fetchWithBrowser(url);
 
             const data = cleanJson(html);

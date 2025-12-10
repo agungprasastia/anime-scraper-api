@@ -9,11 +9,8 @@ export async function getServerStream(sourceUrl, post, nume, type) {
 
         await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
 
-        // Navigate to the episode page to establish context (cookies, referrer, nonce)
         await page.goto(sourceUrl, { waitUntil: 'networkidle2', timeout: 60000 });
 
-        // Execute AJAX request in the page context
-        // We use the site's own jQuery ($) to ensure headers/nonces are handled if they are attached globally
         const resultHtml = await page.evaluate(async (post, nume, type) => {
             return await new Promise((resolve, reject) => {
                 jQuery.ajax({
@@ -37,7 +34,6 @@ export async function getServerStream(sourceUrl, post, nume, type) {
 
         await page.close();
 
-        // Parse result (usually returns HTML with iframe)
         const $ = cheerio.load(resultHtml);
         const iframeSrc = $("iframe").attr("src");
 

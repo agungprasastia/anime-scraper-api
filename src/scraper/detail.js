@@ -8,7 +8,6 @@ export async function scrapeDetail(slug) {
 
     try {
         console.log(`Scraping detail: ${url}`);
-        // Anti-bot: Random delay
         await sleep(Math.floor(Math.random() * 3000) + 1000);
 
         const html = await fetchWithBrowser(url, ".lstepsiode.listeps ul li");
@@ -18,7 +17,6 @@ export async function scrapeDetail(slug) {
         const poster = $(".thumb img").attr("src");
         const title = $(".infoanime h2.entry-title").text().replace("Nonton Anime", "").trim();
 
-        // Extract Status, Rating, Genres
         const status = $(".infoanime span:contains('Status')").text().replace("Status", "").replace(":", "").trim() || "Ongoing";
         const rating = $(".rating-area").text().trim() || $(".score").text().trim() || "N/A";
 
@@ -35,7 +33,7 @@ export async function scrapeDetail(slug) {
         $(".lstepsiode.listeps ul li").each((i, el) => {
             const epNum = $(el).find(".epsright .eps a").text().trim();
             const epLink = $(el).find(".epsright .eps a").attr("href");
-            const epDate = $(el).find(".epsleft .date").text().trim(); // Try to get date if available
+            const epDate = $(el).find(".epsleft .date").text().trim();
 
             if (!epLink || !epNum) return;
 

@@ -5,8 +5,6 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export async function scrapeOngoing() {
     try {
-        // console.log("Scraping ongoing anime from Samehadaku...");
-        // Anti-bot: Random short delay before starting
         await sleep(Math.floor(Math.random() * 2000) + 1000);
 
         const html = await fetchWithBrowser("https://v1.samehadaku.how/", ".post-show ul li");
@@ -26,11 +24,8 @@ export async function scrapeOngoing() {
 
             const slug = link.replace("https://v1.samehadaku.how/anime/", "").replace(/\/$/, "");
 
-            // Extract release info
-            // "Released on: 4 hours ago" or similar
             let releaseDate = $(el).find("span:contains('Released on')").text().replace("Released on:", "").trim();
             if (!releaseDate) {
-                // Fallback to finding any span with "ago" or similar if structure changes
                 releaseDate = $(el).find(".dtla span").first().text().trim();
             }
 
@@ -40,12 +35,11 @@ export async function scrapeOngoing() {
                 poster,
                 current_episode: episode,
                 newest_release_date: releaseDate,
-                release_day: "Unknown", // Will be enriched by schedule merging
+                release_day: "Unknown",
                 link
             });
         });
 
-        // console.log(`Found ${items.length} ongoing anime.`);
         return items;
 
     } catch (err) {

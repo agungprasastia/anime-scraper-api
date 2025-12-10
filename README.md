@@ -27,7 +27,7 @@
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/anime-scraper.git
+   git clone https://github.com/agungprasastia/anime-scraper-api.git
    cd anime-scraper
    ```
 

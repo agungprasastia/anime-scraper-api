@@ -13,11 +13,45 @@ export async function scrapeDetail(slug) {
         const html = await fetchWithBrowser(url, ".lstepsiode.listeps ul li");
         const $ = cheerio.load(html);
 
-        const synopsis = $(".desc .entry-content").text().trim();
-        const poster = $(".thumb img").attr("src");
-        const title = $(".infoanime h2.entry-title").text().replace("Nonton Anime", "").trim();
+        // Robust Title Extraction
+        let title = $(".infoanime h2.entry-title").text().replace("Nonton Anime", "").trim();
+        if (!title) {
+            title = $("h1.entry-title").text().replace("Nonton Anime", "").trim();
+        }
 
-        const status = $(".infoanime span:contains('Status')").text().replace("Status", "").replace(":", "").trim() || "Ongoing";
+        // Robust Synopsis Extraction
+        let synopsis = $(".desc .entry-content").text().trim();
+        if (!synopsis) {
+            synopsis = $(".entry-content").first().text().trim();
+        }
+
+        // Robust Status Extraction
+        let status = "Ongoing";
+        const statusLabel = $(".infoanime span:contains('Status')");
+        if (statusLabel.length > 0) {
+            // 1. Try text inside the span
+            let text = statusLabel.text().replace("Status", "").replace(":", "").trim();
+            if (text) {
+                status = text;
+            } else {
+                // 2. Try next sibling text node
+                const nextNode = statusLabel[0].nextSibling;
+                if (nextNode && nextNode.type === 'text') {
+                    status = nextNode.data.replace(":", "").trim();
+                } else if (statusLabel.next().length > 0) {
+                    // 3. Try next element sibling
+                    status = statusLabel.next().text().trim();
+                }
+            }
+        }
+
+        // Ensure status defaults if empty string came back from robust checks
+        if (!status) status = "Ongoing";
+
+        const poster = $(".thumb img").attr("src");
+        // const title = $(".infoanime h2.entry-title").text().replace("Nonton Anime", "").trim(); // Replaced above
+
+        // const status = $(".infoanime span:contains('Status')").text().replace("Status", "").replace(":", "").trim() || "Ongoing"; // Replaced above
         const rating = $(".rating-area").text().trim() || $(".score").text().trim() || "N/A";
 
         const genres = [];

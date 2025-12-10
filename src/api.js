@@ -42,9 +42,10 @@ export const router = new Elysia()
         return { error: 'Internal Server Error' };
     })
 
-    .get("/anime/ongoing", async ({ set }) => {
+    .get("/anime/ongoing", async ({ query, set }) => {
         try {
-            const ongoingData = await getOrFetch("ongoing_anime", scrapeOngoing);
+            const page = parseInt(query.page) || 1;
+            const ongoingData = await getOrFetch(`ongoing_anime_${page}`, () => scrapeOngoing(page));
 
             try {
                 const scheduleData = await getOrFetch("anime_schedule", scrapeSchedule);
@@ -84,12 +85,12 @@ export const router = new Elysia()
                 data: {
                     ongoingAnimeData: ongoingData || [],
                     paginationData: {
-                        current_page: 1,
-                        has_next_page: false,
-                        has_previous_page: false,
-                        last_visible_page: 1,
-                        next_page: null,
-                        previous_page: null
+                        current_page: parseInt(query.page) || 1,
+                        has_next_page: true,
+                        has_previous_page: (parseInt(query.page) || 1) > 1,
+                        last_visible_page: (parseInt(query.page) || 1) + 1,
+                        next_page: (parseInt(query.page) || 1) + 1,
+                        previous_page: (parseInt(query.page) || 1) > 1 ? (query.page - 1) : null
                     }
                 }
             };

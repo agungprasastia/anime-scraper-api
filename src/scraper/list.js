@@ -3,11 +3,12 @@ import { fetchWithBrowser } from "../utils/browser.js";
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-export async function scrapeOngoing() {
+export async function scrapeOngoing(page = 1) {
     try {
         await sleep(Math.floor(Math.random() * 2000) + 1000);
 
-        const html = await fetchWithBrowser("https://v1.samehadaku.how/", ".post-show ul li");
+        const url = page === 1 ? "https://v1.samehadaku.how/" : `https://v1.samehadaku.how/page/${page}/`;
+        const html = await fetchWithBrowser(url, ".post-show ul li");
         const $ = cheerio.load(html);
 
         const items = [];

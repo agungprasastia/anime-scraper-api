@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
+    "start": "bun run index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -15,7 +15,7 @@
     "axios": "^1.13.2",
     "cheerio": "^1.1.2",
     "dotenv": "^17.2.3",
-    "express": "^5.2.1",
+    "elysia": "latest",
     "node-cache": "^5.1.2",
     "node-cron": "^4.2.1",
     "puppeteer": "^24.32.1"

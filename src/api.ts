@@ -153,6 +153,10 @@ export const router = new Elysia()
             set.status = 500;
             return { error: "Failed to fetch anime detail" };
         }
+    }, {
+        params: t.Object({
+            slug: t.String()
+        })
     })
 
     .get("/anime/:slug/episodes", async ({ params: { slug }, set }) => {
@@ -168,6 +172,10 @@ export const router = new Elysia()
             set.status = 500;
             return { error: "Failed to fetch episodes" };
         }
+    }, {
+        params: t.Object({
+            slug: t.String()
+        })
     })
 
     .get("/anime/episode/:slug", async ({ params: { slug }, set }) => {
@@ -187,6 +195,10 @@ export const router = new Elysia()
             set.status = 500;
             return { error: "Failed to fetch episode" };
         }
+    }, {
+        params: t.Object({
+            slug: t.String()
+        })
     })
 
     .get("/anime/popular", async ({ set }) => {

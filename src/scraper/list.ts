@@ -1,9 +1,10 @@
 import * as cheerio from "cheerio";
-import { fetchWithBrowser } from "../utils/browser.js";
+import { fetchWithBrowser } from "../utils/browser.ts";
+import type { AnimeGridItem } from "../interfaces.ts";
 
-const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-export async function scrapeOngoing(page = 1) {
+export async function scrapeOngoing(page: number = 1): Promise<AnimeGridItem[]> {
     try {
         await sleep(Math.floor(Math.random() * 2000) + 1000);
 
@@ -11,10 +12,10 @@ export async function scrapeOngoing(page = 1) {
         const html = await fetchWithBrowser(url, ".post-show ul li");
         const $ = cheerio.load(html);
 
-        const items = [];
+        const items: AnimeGridItem[] = [];
 
         $(".post-show ul li").each((i, el) => {
-            const title = $(el).find(".entry-title a").attr("title")?.trim();
+            const title = $(el).find(".entry-title a").attr("title")?.trim() || "";
             const link = $(el).find(".entry-title a").attr("href");
             const poster = $(el).find(".thumb img").attr("src");
 

@@ -1,7 +1,8 @@
-import { fetchWithBrowser } from "../utils/browser.js";
+import { fetchWithBrowser } from "../utils/browser.ts";
 import * as cheerio from "cheerio";
+import type { ScheduleDay, ScheduleAnime } from "../interfaces.ts";
 
-const DAYS = {
+const DAYS: Record<string, string> = {
     monday: "Senin",
     tuesday: "Selasa",
     wednesday: "Rabu",
@@ -11,7 +12,7 @@ const DAYS = {
     sunday: "Minggu"
 };
 
-const cleanJson = (text) => {
+const cleanJson = (text: string): any => {
     try {
         const $ = cheerio.load(text);
         const pre = $("pre").text();
@@ -32,9 +33,9 @@ const cleanJson = (text) => {
     }
 };
 
-export async function scrapeSchedule() {
+export async function scrapeSchedule(): Promise<ScheduleDay[]> {
     console.log("Scraping schedule...");
-    const schedule = [];
+    const schedule: ScheduleDay[] = [];
 
     for (const [dayKey, dayName] of Object.entries(DAYS)) {
         try {
@@ -46,7 +47,7 @@ export async function scrapeSchedule() {
             const data = cleanJson(html);
 
             if (Array.isArray(data)) {
-                const animeList = data.map(item => ({
+                const animeList: ScheduleAnime[] = data.map(item => ({
                     title: item.title,
                     slug: item.url.split("/anime/")[1]?.replace(/\/$/, "") || "",
                     poster: item.featured_img_src,

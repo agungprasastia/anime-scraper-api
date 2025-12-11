@@ -1,5 +1,5 @@
 import cron from "node-cron";
-import { scrapeOngoing } from "./scraper/list.js";
+import { scrapeOngoing } from "./scraper/list.ts";
 
 cron.schedule("*/10 * * * *", async () => {
     console.log("Cron: Warming up ongoing anime cache...");

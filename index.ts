@@ -1,7 +1,7 @@
 import { Elysia } from "elysia";
 import dotenv from "dotenv";
-import { router } from "./src/api.js";
-import "./src/worker.js";
+import { router } from "./src/api.ts";
+import "./src/worker.ts";
 
 dotenv.config();
 

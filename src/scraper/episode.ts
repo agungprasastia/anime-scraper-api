@@ -1,9 +1,10 @@
 import * as cheerio from "cheerio";
-import { fetchWithBrowser } from "../utils/browser.js";
+import { fetchWithBrowser } from "../utils/browser.ts";
+import type { EpisodeDetail, StreamServer, DownloadLink } from "../interfaces.ts";
 
-const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-export async function scrapeEpisode(slug) {
+export async function scrapeEpisode(slug: string): Promise<EpisodeDetail | null> {
     const url = `https://v1.samehadaku.how/${slug}/`;
 
     try {
@@ -28,7 +29,7 @@ export async function scrapeEpisode(slug) {
 
         console.log("Default stream found:", defaultStream);
 
-        const serverList = [];
+        const serverList: StreamServer[] = [];
         const serverElements = $(".east_player_option");
 
         serverElements.each((i, el) => {
@@ -42,16 +43,16 @@ export async function scrapeEpisode(slug) {
             }
         });
 
-        const downloadLinks = [];
+        const downloadLinks: { format: string; links: DownloadLink[] }[] = [];
         const downloadElements = $(".download-eps");
 
         downloadElements.each((i, el) => {
             const format = $(el).find("p").text().trim();
-            const links = [];
+            const links: DownloadLink[] = [];
 
             $(el).find("ul li").each((j, li) => {
                 const resolution = $(li).find("strong").text().trim();
-                const urls = [];
+                const urls: { provider: string; url: string | undefined }[] = [];
 
                 $(li).find("span a").each((k, a) => {
                     urls.push({
@@ -66,12 +67,12 @@ export async function scrapeEpisode(slug) {
             downloadLinks.push({ format, links });
         });
 
-        const download_urls = {};
+        const download_urls: Record<string, DownloadLink[]> = {};
         downloadLinks.forEach(item => {
             download_urls[item.format] = item.links;
         });
 
-        const result = {
+        const result: EpisodeDetail = {
             title,
             episode: title,
             releaseDate,
@@ -82,7 +83,7 @@ export async function scrapeEpisode(slug) {
 
         return result;
 
-    } catch (err) {
+    } catch (err: any) {
         console.error(`Episode scrape error (${slug}):`, err.message);
         return null;
     }

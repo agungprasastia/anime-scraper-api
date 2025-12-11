@@ -1,7 +1,7 @@
 import * as cheerio from "cheerio";
-import { openBrowser, closeBrowser } from "../utils/browser.js";
+import { openBrowser, closeBrowser } from "../utils/browser.ts";
 
-export async function getServerStream(sourceUrl, post, nume, type) {
+export async function getServerStream(sourceUrl: string, post: string, nume: string, type: string): Promise<string | null> {
     try {
         console.log(`Getting server stream for Post:${post} Nume:${nume} Type:${type} from ${sourceUrl}`);
         const browser = await openBrowser();
@@ -12,7 +12,8 @@ export async function getServerStream(sourceUrl, post, nume, type) {
         await page.goto(sourceUrl, { waitUntil: 'networkidle2', timeout: 60000 });
 
         const resultHtml = await page.evaluate(async (post, nume, type) => {
-            return await new Promise((resolve, reject) => {
+            return await new Promise<string>((resolve, reject) => {
+                // @ts-ignore
                 jQuery.ajax({
                     url: '/wp-admin/admin-ajax.php',
                     type: 'POST',
@@ -22,10 +23,10 @@ export async function getServerStream(sourceUrl, post, nume, type) {
                         nume: nume,
                         type: type
                     },
-                    success: function (data) {
+                    success: function (data: string) {
                         resolve(data);
                     },
-                    error: function (err) {
+                    error: function (err: any) {
                         reject(err.statusText);
                     }
                 });
@@ -38,7 +39,7 @@ export async function getServerStream(sourceUrl, post, nume, type) {
         const iframeSrc = $("iframe").attr("src");
 
         console.log(`Found server stream: ${iframeSrc}`);
-        return iframeSrc;
+        return iframeSrc || null;
 
     } catch (err) {
         console.error(`Server scrape error:`, err);

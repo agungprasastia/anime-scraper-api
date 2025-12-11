@@ -1,8 +1,8 @@
-import puppeteer from 'puppeteer';
+import puppeteer, { type Browser } from 'puppeteer';
 
-let browser;
+let browser: Browser | null = null;
 
-export const openBrowser = async () => {
+export const openBrowser = async (): Promise<Browser> => {
     if (!browser) {
         browser = await puppeteer.launch({
             headless: true,
@@ -12,14 +12,14 @@ export const openBrowser = async () => {
     return browser;
 };
 
-export const closeBrowser = async () => {
+export const closeBrowser = async (): Promise<void> => {
     if (browser) {
         await browser.close();
         browser = null;
     }
 };
 
-export const fetchWithBrowser = async (url, waitSelector = 'body') => {
+export const fetchWithBrowser = async (url: string, waitSelector: string = 'body'): Promise<string> => {
     const browserInstance = await openBrowser();
     const page = await browserInstance.newPage();
 

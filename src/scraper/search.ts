@@ -1,9 +1,10 @@
 import * as cheerio from "cheerio";
-import { fetchWithBrowser } from "../utils/browser.js";
+import { fetchWithBrowser } from "../utils/browser.ts";
+import type { AnimeGridItem } from "../interfaces.ts";
 
-const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-export async function scrapeSearch(query) {
+export async function scrapeSearch(query: string): Promise<AnimeGridItem[]> {
     const encodedQuery = encodeURIComponent(query);
     const url = `https://v1.samehadaku.how/?s=${encodedQuery}`;
 
@@ -13,7 +14,7 @@ export async function scrapeSearch(query) {
         const html = await fetchWithBrowser(url, "main#main .animpost");
         const $ = cheerio.load(html);
 
-        const items = [];
+        const items: AnimeGridItem[] = [];
 
         $("main#main .animpost").each((i, el) => {
             const title = $(el).find(".animposx a .data .title h2").text().trim();
@@ -38,7 +39,7 @@ export async function scrapeSearch(query) {
 
         return items;
 
-    } catch (err) {
+    } catch (err: any) {
         console.error(`Search scrape error (${query}):`, err.message);
         return [];
     }

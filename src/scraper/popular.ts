@@ -1,9 +1,10 @@
 import * as cheerio from "cheerio";
-import { fetchWithBrowser } from "../utils/browser.js";
+import { fetchWithBrowser } from "../utils/browser.ts";
+import type { AnimeGridItem } from "../interfaces.ts";
 
-const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-export async function scrapePopular() {
+export async function scrapePopular(): Promise<AnimeGridItem[]> {
     try {
         await sleep(Math.floor(Math.random() * 2000) + 1000);
 
@@ -11,7 +12,7 @@ export async function scrapePopular() {
         const html = await fetchWithBrowser(url, ".topten-animesu");
         const $ = cheerio.load(html);
 
-        const items = [];
+        const items: AnimeGridItem[] = [];
 
         $(".topten-animesu li").each((i, el) => {
             // Title cleanup: "8.73 TOP1 One Piece" -> "One Piece"

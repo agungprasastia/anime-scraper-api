@@ -1,9 +1,10 @@
 import * as cheerio from "cheerio";
-import { fetchWithBrowser } from "../utils/browser.js";
+import { fetchWithBrowser } from "../utils/browser.ts";
+import type { AnimeDetail } from "../interfaces.ts";
 
-const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-export async function scrapeDetail(slug) {
+export async function scrapeDetail(slug: string): Promise<AnimeDetail | null> {
     const url = `https://v1.samehadaku.how/anime/${slug}/`;
 
     try {
@@ -54,15 +55,15 @@ export async function scrapeDetail(slug) {
         // const status = $(".infoanime span:contains('Status')").text().replace("Status", "").replace(":", "").trim() || "Ongoing"; // Replaced above
         const rating = $(".rating-area").text().trim() || $(".score").text().trim() || "N/A";
 
-        const genres = [];
+        const genres: { name: string; slug: string }[] = [];
         $(".genre-info a").each((i, el) => {
             genres.push({
                 name: $(el).text().trim(),
-                slug: $(el).attr("href").split("/genre/")[1]?.replace(/\/$/, "") || ""
+                slug: $(el).attr("href")?.split("/genre/")[1]?.replace(/\/$/, "") || ""
             });
         });
 
-        const episode_lists = [];
+        const episode_lists: { episode: string; slug: string; date: string }[] = [];
 
         $(".lstepsiode.listeps ul li").each((i, el) => {
             const epNum = $(el).find(".epsright .eps a").text().trim();
@@ -93,7 +94,7 @@ export async function scrapeDetail(slug) {
             episode_lists
         };
 
-    } catch (err) {
+    } catch (err: any) {
         console.error(`Detail scrape error (${slug}):`, err.message);
         return null;
     }

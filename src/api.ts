@@ -1,19 +1,20 @@
-import { Elysia } from "elysia";
+import { Elysia, t, type Context } from "elysia";
 import NodeCache from "node-cache";
-import { scrapeOngoing } from "./scraper/list.js";
-import { scrapeDetail } from "./scraper/detail.js";
-import { scrapeSearch } from "./scraper/search.js";
-import { scrapeEpisode } from "./scraper/episode.js";
-import { getServerStream } from "./scraper/server.js";
-import { scrapeSchedule } from "./scraper/schedule.js";
-import { scrapePopular } from "./scraper/popular.js";
+import { scrapeOngoing } from "./scraper/list.ts";
+import { scrapeDetail } from "./scraper/detail.ts";
+import { scrapeSearch } from "./scraper/search.ts";
+import { scrapeEpisode } from "./scraper/episode.ts";
+import { getServerStream } from "./scraper/server.ts";
+import { scrapeSchedule } from "./scraper/schedule.ts";
+import { scrapePopular } from "./scraper/popular.ts";
+import type { AnimeDetail, AnimeGridItem, ScheduleAnime, ScheduleDay } from "./interfaces.ts";
 
 const cache = new NodeCache({ stdTTL: 900 });
 
-const activeRequests = new Map();
+const activeRequests = new Map<string, Promise<any>>();
 
-const getOrFetch = async (key, fetchFn) => {
-    const cachedData = cache.get(key);
+const getOrFetch = async <T>(key: string, fetchFn: () => Promise<T>): Promise<T | undefined> => {
+    const cachedData = cache.get<T>(key);
     if (cachedData) return cachedData;
 
     if (activeRequests.has(key)) return activeRequests.get(key);
@@ -45,13 +46,13 @@ export const router = new Elysia()
 
     .get("/anime/ongoing", async ({ query, set }) => {
         try {
-            const page = parseInt(query.page) || 1;
-            const ongoingData = await getOrFetch(`ongoing_anime_${page}`, () => scrapeOngoing(page));
+            const page = parseInt(query.page ?? "1") || 1;
+            const ongoingData = await getOrFetch<AnimeGridItem[]>(`ongoing_anime_${page}`, () => scrapeOngoing(page));
 
             try {
-                const scheduleData = await getOrFetch("anime_schedule", scrapeSchedule);
+                const scheduleData = await getOrFetch<ScheduleDay[]>("anime_schedule", scrapeSchedule);
 
-                const posterMap = new Map();
+                const posterMap = new Map<string, string>();
 
                 if (Array.isArray(scheduleData)) {
                     scheduleData.forEach(day => {
@@ -67,12 +68,13 @@ export const router = new Elysia()
                     if (Array.isArray(ongoingData)) {
                         ongoingData.forEach(anime => {
                             if (posterMap.has(anime.slug)) {
-                                anime.poster = posterMap.get(anime.slug);
+                                const poster = posterMap.get(anime.slug);
+                                if (poster) anime.poster = poster;
                             }
 
                             const scheduleItem = scheduleData.flatMap(d => d.anime.map(a => ({ ...a, day: d.day }))).find(a => a.slug === anime.slug);
                             if (scheduleItem) {
-                                anime.release_day = scheduleItem.day;
+                                anime.release_day = (scheduleItem as any).day;
                             }
                         });
                     }
@@ -86,12 +88,12 @@ export const router = new Elysia()
                 data: {
                     ongoingAnimeData: ongoingData || [],
                     paginationData: {
-                        current_page: parseInt(query.page) || 1,
+                        current_page: page,
                         has_next_page: true,
-                        has_previous_page: (parseInt(query.page) || 1) > 1,
-                        last_visible_page: (parseInt(query.page) || 1) + 1,
-                        next_page: (parseInt(query.page) || 1) + 1,
-                        previous_page: (parseInt(query.page) || 1) > 1 ? (query.page - 1) : null
+                        has_previous_page: page > 1,
+                        last_visible_page: page + 1,
+                        next_page: page + 1,
+                        previous_page: page > 1 ? (page - 1) : null
                     }
                 }
             };
@@ -100,6 +102,10 @@ export const router = new Elysia()
             set.status = 500;
             return { error: "Failed to fetch ongoing anime" };
         }
+    }, {
+        query: t.Object({
+            page: t.Optional(t.String())
+        })
     })
 
     .get("/anime/search", async ({ query, set }) => {
@@ -117,11 +123,15 @@ export const router = new Elysia()
             set.status = 500;
             return { error: "Failed to search anime" };
         }
+    }, {
+        query: t.Object({
+            q: t.String()
+        })
     })
 
     .get("/anime/schedule", async ({ set }) => {
         try {
-            const data = await getOrFetch("anime_schedule", scrapeSchedule);
+            const data = await getOrFetch<ScheduleDay[]>("anime_schedule", scrapeSchedule);
             return data || [];
         } catch (err) {
             console.error("API Schedule Error:", err);
@@ -152,7 +162,7 @@ export const router = new Elysia()
                 set.status = 404;
                 return { error: "Not found" };
             }
-            return data.episodes || [];
+            return data.episode_lists || [];
         } catch (err) {
             console.error(`API Episodes Error (${slug}):`, err);
             set.status = 500;
@@ -192,10 +202,6 @@ export const router = new Elysia()
 
     .post("/anime/server", async ({ body, set }) => {
         const { slug, post, nume, type } = body;
-        if (!slug || !post || !nume || !type) {
-            set.status = 400;
-            return { error: "Missing parameters" };
-        }
 
         try {
             const url = `https://v1.samehadaku.how/${slug}/`;
@@ -211,4 +217,11 @@ export const router = new Elysia()
             set.status = 500;
             return { error: "Failed to fetch server stream" };
         }
+    }, {
+        body: t.Object({
+            slug: t.String(),
+            post: t.String(),
+            nume: t.String(),
+            type: t.String()
+        })
     });

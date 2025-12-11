@@ -11,7 +11,8 @@ export async function scrapeEpisode(slug: string): Promise<EpisodeDetail | null>
         console.log(`Scraping episode: ${slug}`);
         await sleep(Math.floor(Math.random() * 2000) + 1000);
 
-        const html = await fetchWithBrowser(url, "#player_embed iframe");
+        // Use a more generic selector that is guaranteed to exist on the page
+        const html = await fetchWithBrowser(url, "h1.entry-title");
         const $ = cheerio.load(html);
 
         const title = $("h1.entry-title").text().trim();

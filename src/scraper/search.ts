@@ -19,7 +19,8 @@ export async function scrapeSearch(query: string): Promise<AnimeGridItem[]> {
         $("main#main .animpost").each((i, el) => {
             const title = $(el).find(".animposx a .data .title h2").text().trim();
             const link = $(el).find(".animposx a").attr("href");
-            const poster = $(el).find(".animposx .content-thumb img").attr("src");
+            const imgEl = $(el).find(".animposx .content-thumb img");
+            const poster = imgEl.attr("src") || imgEl.attr("data-src") || imgEl.attr("data-lazy-src") || imgEl.attr("data-original");
             const score = $(el).find(".animposx .content-thumb .score").text().trim();
             const type = $(el).find(".animposx .data .type").text().trim();
 

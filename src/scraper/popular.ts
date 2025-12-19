@@ -28,7 +28,8 @@ export async function scrapePopular(): Promise<AnimeGridItem[]> {
             const title = titleMatch ? titleMatch[1].trim() : rawTitle;
 
             const link = $(el).find("a").first().attr("href");
-            const poster = $(el).find("img").attr("src");
+            const imgEl = $(el).find("img");
+            const poster = imgEl.attr("src") || imgEl.attr("data-src") || imgEl.attr("data-lazy-src") || imgEl.attr("data-original");
 
             if (!title || !link) return;
 

@@ -17,7 +17,8 @@ export async function scrapeOngoing(page: number = 1): Promise<AnimeGridItem[]> 
         $(".post-show ul li").each((i, el) => {
             const title = $(el).find(".entry-title a").attr("title")?.trim() || "";
             const link = $(el).find(".entry-title a").attr("href");
-            const poster = $(el).find(".thumb img").attr("src");
+            const imgEl = $(el).find(".thumb img");
+            const poster = imgEl.attr("src") || imgEl.attr("data-src") || imgEl.attr("data-lazy-src") || imgEl.attr("data-original");
 
             const episodeNum = $(el).find("span:contains('Episode') author").text().trim();
             const episode = episodeNum ? `Episode ${episodeNum}` : "Unknown Episode";
